@@ -1,0 +1,149 @@
+% !TeX spellcheck = en_GB
+
+
+\documentclass[a4paper,onecolumn,11pt,unpublished,allowfontchangeintitle]{quantumarticle}
+\pdfoutput=1
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+%\usepackage{subcaption}
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{csquotes}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphics}
+\usepackage{physics}
+\usepackage{authblk}
+\usepackage{caption}
+\usepackage{tensor}
+\usepackage{xcolor}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{remark}{Remark}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{dsfont}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usepackage{multirow}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+%%%%% code snippets
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+\lstset{style=mystyle}
+\lstset{language=Python}
+
+\newcommand{\Id}{\mathds{1}}
+\newcommand{\secref}[1]{Section~\ref{#1}}
+%\newcommand{\CC}{\sf \textbf{C}}
+%\newcommand{\QQ}{\sf \textbf{Q}}
+\newcommand{\ie}{\emph{i.e.}}
+\newcommand{\eg}{\emph{e.g.}}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
+%%%%% this macro should be used duing paper preparaiton only
+\newcounter{todo}
+\setcounter{todo}{1}
+\providecommand{\todo}[1]{
+   \par\vspace{6pt}
+   \noindent\underline{\textsc{Note \arabic{todo}:}} \emph{#1}
+   \vspace{6pt}
+   \addtocounter{todo}{1}
+}
+
+\begin{document}
+
+\title{QUBO Music Reduction Formulation for Chiptune}
+
+\author{Ludmila Botelho}
+\author{Özlem Salehi}
+\affiliation{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Baltycka 5, 44-100 Gliwice, Poland}
+
+
+\maketitle
+
+\section{What is the problem?}
+
+If one wants to play orchestral music on an arbitrary instrument, complicated arrangement work is necessary. Since this task often requires extensive musical knowledge and tedious work, an automatic arrangement system could simplify the process and increase accessibility for instance to amateurs. This task, also called \emph{score reduction} has been proposed in a vast literature using classical algorithms. Is it possible to improve it using Quadratic Unconstrained Binary Optimization (QUBO) formulation and Quantum Annealing?
+
+\section{The instrument}
+Unlike today, where we have nearly infinite data storage and can load up our modern games with lots of impressive graphics and elaborate orchestral music scores, in the early days of video games, memory space was precious with very little to spare. Therefore, the old video games and computers had an inbuilt sound processing unit, the so called programmable sound generator (PSG) were used as a musical instrument to produce the sound generated from one or more basic waveforms, and often some kind of noise. 
+
+\section{Solution attempt formulation}
+\subsection{Quantifing information throught entropy}
+Consider a music sheet, it shows the music of all instruments or voices in a composition lined up in a fixed order. On each instrument track, we can divide it in "phrases", \emph{i.e.}, a group of measures separated by long pauses or long/repeated notes. 
+
+Usually, when we listen to some music we tend to pay attention on the melody, which is the most evident part of the music and contains information we remember about the song. It is more dynamic compared to the "background", for example, repetitions of same notes. Therefore, it is reasonable to think in terms of entropy to qualify the amount of information or degree of "surprise". Therefore, for a given phrase, we can calculate the entropy of it using:
+\begin{equation}
+H(X)=-\sum_{i=1}^{n} P\left(x_{i}\right) \log _{2} P\left(x_{i}\right) ,
+\end{equation}
+where $P(x_i)$ is the probability of possible value for a random variable X. To quantify the amount of information about the notes is changing it is important to take account of \emph{Pitch} and \emph{Rythm} of the notes.
+\paragraph{Pitch entropy}
+Pitch entropy corresponds to the variate of pitches occurring in a sequence of notes in a phrase. The probabilityh $P(x_i)$ can be computed by counting the occurency of $n_i$ of $i$th pitch in a phrase containing $N$ notes:
+\begin{equation}
+P\left(x_{i}\right)=\frac{n_{i}}{N}.
+\end{equation}
+\paragraph{Rhythm entropy}
+What give us the sense of rhythm is the time between two consecutive notes and their individual durations. Therefore, we also count in order to compute the rhythm entropy in the same fashion we did for Pitch.
+
+Having this in mind, the entropy the prahse is going to be the sum $H(X)=H(X_{\text{pitch}})+H(X_{\text{Rythm}})$.
+
+\subsection{QUBO formulation}
+Our music reduction problem can be formulated as an optimization task, \emph{i.e.}, given an music composition, we want to select the most relevant and playable phrases. So basically we want to select the parts with biggest entropy according to some constrains. The problem is similar to a k-track problem, which a $k$ number of machines has to compute $j$ tasks with different time lengths and specifically order. Therefore, we can sum up the following binary variables $P_k$ with their entropies as "weight":
+\begin{equation}
+	\text{maximize:} \quad \sum P_k E(P_k)
+\end{equation}
+Each $P_k$ has a time resolution given by measures described as a set of binary variables as $\{x_{i,j},x_{i,j+1},\dots, x_{i,j+n}\} \in P_k$. This sequence of measures contained on a specific phrase has the indexes $i$ and $j$ labelled after the instrument and measure number respectively. If a phrase is selected, \ie, $P_k = 1$, then $\sum x_{i,j}= n_i$.
+
+For the given instrument, we decided that the melody should be encoded in two monophonic tracks, which give us:
+\begin{equation}
+ \forall i \in I , \quad \sum_j x_{i,j} \leq 2,
+\end{equation}
+where $I$ is the list of instruments. Which means we can play up to 2 notes at the same time. 
+
+Those first two constrains are important to avoid overlap between more than 2 tracks.
+
+Now we can think about implementing it using Quantum Annealing. 
+
+\section{To do things}
+We are going to use DWace Ocean to make the Annealing Computation on Python. The project is going to implement in the following way:
+\begin{itemize}
+	\item Find a library/package to handle MIDI and music sheet transcription for lists/dictionary
+	\item Calculate the entropies from the notes information
+	\item Write it in QUBO form, maybe using Qiskit or PyQubo
+	\item Run the optimization
+\end{itemize}
+
+In order to simplify things and test the first steps, instead of calculating the whole phrase entropy we choose to do a toy model with few measures. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\bibliographystyle{unsrt}
+%\bibliography{bibl}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
