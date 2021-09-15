@@ -1,4 +1,4 @@
-# q-music-reduction
+# qumusic-reduction
 Music Reduction using Quantum Annealing 
 
 Required python packages
