@@ -28,22 +28,19 @@ def get_rests(phrase):
 
 def get_pitch_entropy(phrase):
     pitches_list = get_pitches(phrase)
-    num_pitches = len(pitches_list_all)
+    num_pitches = len(pitches_list)
     unique,counts = np.unique(pitches_list,return_counts=True)
-    dict(zip(unique, counts/num_pitches))
+    # dict(zip(unique, counts/num_pitches))
     pitch_entropy = [-p*np.log(p) for p in counts/num_pitches]
     return pitch_entropy
 
-
-phrase = file[0].measures(1,7)
-print(get_pitches(phrase))
-print(get_rests(phrase))
-print(phrase.show('text'))
-    # print(measure.notes)
-    # print(getnotes(measure))
+# def get_rhythm_entropy(phrase):
 #
-# song_features_dict = {}
-# for i,part in file:
-#     song_features_dict[part.name] = {}
-#     for k,measure in enumerate(part.measure):
-#         song_features_dict[part.name][k] = getnotes(measure)
+#     return rhythm_entropy
+
+if __name__ == __main__:
+    phrase = file[0].measures(1,7)
+    print(get_pitches(phrase))
+    print(get_rests(phrase))
+    print(get_pitch_entropy(phrase))
+    print(phrase.show('text'))
