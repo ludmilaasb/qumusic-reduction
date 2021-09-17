@@ -26,24 +26,27 @@ def get_rests(phrase):
         rest_list.append(nt.duration.quarterLength/4)
     return rest_list
 
-def get_pitch_entropy(phrase):
-    pitches_list = get_pitches(phrase)
-    num_pitches = len(pitches_list)
-    unique,counts = np.unique(pitches_list,return_counts=True)
-    # dict(zip(unique, counts/num_pitches))
-    pitch_entropy = [-p*np.log(p) for p in counts/num_pitches]
-    return pitch_entropy
+def get_rhythm(phrase):
+    rhythm_list = []
+    count = 0
+    for nt in file[1].measures(1,7).flat.getElementsByClass(['Note','Chord','Rest']):
+        print(nt)
+        if nt.isRest:
+            count+= nt.duration.quarterLength/4
+        if nt.isRest == False and count >= 0:
+            rhythm_list.append(count)
+            count = 0
+    return rhythm_list
 
-def get_rhythm_entropy(phrase):
-rhythm_list = []
-count = 0
-for nt in phrase.flat.notesAndRests:
-    print(nt)
-    if nt.isRest:
-        count+= nt.duration.quarterLength/4
-    if nt.isRest == False and count >= 0:
-        rhythm_list.append(count)
-        count = 0
+def get_list_entropy(a_list):
+    unique,counts = np.unique(a_list,return_counts=True)
+    # dict(zip(unique, counts/num_pitches))
+    list_entropy = sum([-p*np.log(p) for p in counts/len(a_list)])
+    return list_entropy
+
+
+
+
 
 if __name__ == "__main__":
     phrase = file[0].measures(1,7)
