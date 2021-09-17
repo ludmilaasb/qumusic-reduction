@@ -34,11 +34,18 @@ def get_pitch_entropy(phrase):
     pitch_entropy = [-p*np.log(p) for p in counts/num_pitches]
     return pitch_entropy
 
-# def get_rhythm_entropy(phrase):
-#
-#     return rhythm_entropy
+def get_rhythm_entropy(phrase):
+rhythm_list = []
+count = 0
+for nt in phrase.flat.notesAndRests:
+    print(nt)
+    if nt.isRest:
+        count+= nt.duration.quarterLength/4
+    if nt.isRest == False and count >= 0:
+        rhythm_list.append(count)
+        count = 0
 
-if __name__ == __main__:
+if __name__ == "__main__":
     phrase = file[0].measures(1,7)
     print(get_pitches(phrase))
     print(get_rests(phrase))
