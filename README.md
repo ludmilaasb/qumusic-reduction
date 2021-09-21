@@ -4,7 +4,7 @@ Music Reduction using Quantum Annealing
 Required python packages
 
 - dwave Ocean tools
-- mido
+- music21
 
 ## Installation:
 It is recommended to create a virtual environment before installing the packages.
