@@ -27,4 +27,4 @@ if __name__ == "__main__":
     sampleset = sampler.sample_qubo(Q,
                              num_reads = 10,
                              label='Example - Get Max Entropy')
-    print(sampleset)
+    print(sampleset.first)
