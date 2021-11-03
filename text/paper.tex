@@ -1,0 +1,58 @@
+% !TeX spellcheck = en_US
+\documentclass[11pt,a4paper]{article}
+
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{graphics}
+\usepackage{hyperref}
+\usepackage{physics}
+\usepackage{cite}
+\usepackage{todonotes}
+\usepackage{comment}
+\usepackage{authblk}
+\usepackage{optidef}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\captionsetup{subrefformat=parens}
+
+\title{}
+\author[1]{Ludmila Botelho}
+\author[1]{\"Ozlem Salehi}
+\affil[1]{Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, Bałtycka~5, 44-100 Gliwice, Poland}
+\date{}
+
+
+\begin{document}
+	\maketitle
+	\begin{abstract}
+
+\end{abstract}
+
+
+\section{Formulations}
+
+Suppose that there are $ N $ tracks in the song and the goal is to reduce the number of tracks to $ M $.
+\subsection{First approach}
+
+This is the approach used to model fixed job scheduling \cite{arkin1987scheduling, barcia2005k}. 
+
+Let $L $ be the number of phrases. Let $ p_i $ be the binary variables such that $ p_i=1 $ if phrase $i$ is selected and 0 otherwise for $ i=1, \dots ,L $. Let us denote the set of phrases $ p_1,p_2,\dots,p_L $ by $ P $. Let $ G=(P,E) $ be the graph with vertices $ P $ such that edge $(i,j) \in E$ if phrases $ i $ and $ j $ are compatible i.e. they do not intersect.
+
+Let $ x_{ij} $ be the assignment variable such that $ x_{ij} = 1 $ if phrase $i$ is assigned to track $j$ for $ i = 1, \dots ,L $ and $ j=1, \dots ,M  $. $ e(p_i) $ denotes the entropy for phrase $ p_i $. The goal is to maximize 
+\begin{equation}
+\sum_{i=1}^L e(p_i)p_i	
+ \end{equation}
+ such that
+ \begin{align}
+ &\sum_{j=1}^M x_{ij} \leq 1 \mbox{ for }i=1\dots L \\
+ &\sum_{i \in I} x_{ij} \leq 1 \mbox{ for } I \subseteq P
+ \end{align}
+ where $ I $ in any maximal independent set of $ G $.
+\end{document}
+
+The first constraint ensures that each phrase is assigned to at most one track. The second constraints ensures that incompatible phrases are not selected. In our case, $ G $ is an interval graph and the problem is solvable in time $ O(L^2 \log L) $ by a classical algorithm. The number of variables required by this approach is $ O(LM) $. Note that $ L $ depends on the number of tracks and $ L = O(N) $. 
+
+The drawback of this formulation is that it does not take into consideration if after the reduction some tracks are empty in a given time period. It can even be the case that all tracks are empty at a time point. In terms of jobs and machines, this corresponds to machine being idle for some time. 
+
