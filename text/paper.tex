@@ -38,11 +38,18 @@ Suppose that there are $ N $ tracks in the song and the goal is to reduce the nu
 
 This is the approach used to model fixed job scheduling \cite{arkin1987scheduling, barcia2005k}. 
 
-Let $L $ be the number of phrases. Let $ p_i $ be the binary variables such that $ p_i=1 $ if phrase $i$ is selected and 0 otherwise for $ i=1, \dots ,L $. Let us denote the set of phrases $ p_1,p_2,\dots,p_L $ by $ P $. Let $ G=(P,E) $ be the graph with vertices $ P $ such that edge $(i,j) \in E$ if phrases $ i $ and $ j $ are compatible i.e. they do not intersect.
+Let $L $ be the number of phrases. Let us denote the set of phrases $ p_1,p_2,\dots,p_L $ by $ P $. Let $ G=(P,E) $ be the graph with vertices $ P $ such that edge $(i,j) \in E$ if phrases $ i $ and $ j $ are compatible i.e. they do not intersect.
 
-Let $ x_{ij} $ be the assignment variable such that $ x_{ij} = 1 $ if phrase $i$ is assigned to track $j$ for $ i = 1, \dots ,L $ and $ j=1, \dots ,M  $. $ e(p_i) $ denotes the entropy for phrase $ p_i $. The goal is to maximize 
+Let $ x_{ij} $ be the assignment variable such that
 \begin{equation}
-\sum_{i=1}^L e(p_i)p_i	
+x_{ij} =   \begin{cases}%
+1,      & \text{if phrase $i$ is assigned to track $j$}\\
+0, & \text{otherwise.}
+\end{cases}
+\end{equation}
+ for $ i = 1, \dots ,L $ and $ j=1, \dots ,M  $. $ e(p_i) $ denotes the entropy for phrase $ p_i $. The goal is to maximize 
+\begin{equation}
+\sum_{i=1}^L \sum_{j=1}^M e(p_{i})x_{ij}	
  \end{equation}
  such that
  \begin{align}
@@ -50,9 +57,87 @@ Let $ x_{ij} $ be the assignment variable such that $ x_{ij} = 1 $ if phrase $i$
  &\sum_{i \in I} x_{ij} \leq 1 \mbox{ for } I \subseteq P
  \end{align}
  where $ I $ in any maximal independent set of $ G $.
-\end{document}
 
-The first constraint ensures that each phrase is assigned to at most one track. The second constraints ensures that incompatible phrases are not selected. In our case, $ G $ is an interval graph and the problem is solvable in time $ O(L^2 \log L) $ by a classical algorithm. The number of variables required by this approach is $ O(LM) $. Note that $ L $ depends on the number of tracks and $ L = O(N) $. 
+
+The first constraint ensures that each phrase is assigned to at most one track. The second constraints ensures that incompatible phrases are not selected. In our case, $ G $ is an interval graph and the problem is solvable in time $ O(L^2 \log L) $ by a classical algorithm. The number of variables required by this approach is $ O(LM) $. Note that $ L $ depends on the number of tracks and the number of measures in the music piece.
 
 The drawback of this formulation is that it does not take into consideration if after the reduction some tracks are empty in a given time period. It can even be the case that all tracks are empty at a time point. In terms of jobs and machines, this corresponds to machine being idle for some time. 
 
+\subsection{New approach}
+In order to overcome this, we will define the following formulation. Let $ p_{ij} $ denote the $ j $'th phrase of track $ i $. Let us define the binary variable $x_{ij}$ such that:
+\begin{equation}
+x_{ij} =   \begin{cases}%
+1,      & \text{$j$'th phrase of track $i$ is selected}\\
+0, & \text{otherwise.}
+\end{cases}
+\end{equation}
+ for $ i = 1, \dots ,N $ and $ j=1, \dots ,P_i  $ where $P_i$ is the number of phrases in track $i$.
+
+
+Assuming that each phrase ends exactly at the end of a measure, we can propose the following binary variables $m_{ik}$ such that 
+\begin{equation}\label{eq:phrasemeasure}
+x_{ij} = 1 \implies m_{ik}=1 \mbox{ for } k \in S_{ij}
+\end{equation}
+ where $S_{ij}$ is the set of measures that the phrase $p_{ij}$ consists of. 
+ 
+ The goal is to maximize:
+ \begin{equation}
+ \sum_{i=1}^N\sum_{j=1}^{P_i} e(p_{ij})x_{ij}
+ \end{equation}
+ such that
+ \begin{equation}\label{eq:mtrack}
+\sum_{i=1}^N m_{ik} = M \mbox{ for }k=1,\dots, K 
+\end{equation}
+ where $K$ is the number of measures in the music piece. 
+ 
+ The constraint defined by Eq.\eqref{eq:mtrack} ensures that $M$ measures are selected among $ N $ at any given time. Note that this is a soft constraint while the constraint defined in Eq. \ref{eq:phrasemeasure} is a hard constraint. The number of variables required by this formulation is upper bounded by $ O(L+NK) $.
+ 
+ Note that the obtained solution does not give us information about which phrase should be assigned to which track. But once we have the assignment to the binary variables $ x_{ij} $, this can be determined using the following classical algorithm:
+ 
+ \subsection{More advanced formulation}
+ 
+ Now suppose that we want to add restrictions about the assignment of phrases to particular tracks. In this case, we will slightly modify our formulation which takes the following form.
+ 
+  Let us define the binary variable $x_{ij}^t$ such that:
+ \begin{equation}
+ x_{ij}^t =   \begin{cases}%
+ 1,      & \text{$j$'th phrase of track $i$ is assigned to track $ t $}\\
+ 0, & \text{otherwise.}
+ \end{cases}
+ \end{equation}
+ for $ i = 1, \dots ,L $ and $ j=1, \dots ,P_i  $ and $ t = 1, \dots, M $.
+ 
+\begin{equation}
+ x_{ij}^t = 1 \implies m_{ik}=1 \mbox{ for } k \in S_{ij}.
+ \end{equation}
+
+ The goal is to maximize:
+ \begin{equation}
+ \sum_{t=1}^M \sum_{i=1}^L\sum_{j=1}^{P_i} e(p_{ij})x_{ij}^t
+ \end{equation}
+ such that
+ \begin{equation}
+ \sum_{i=1}^N m_{ik} = M \mbox{ for }k=1\dots K. 
+ \end{equation} 
+ 
+ Suppose that we want to add a restriction about phrases that should not be assigned to a particular track $ t $. For instance we may restrict phrase $ p_{ij} $ following phrase $ p_{i'j'} $ when the interval between the last note of phrase $ p_{ij} $ and the first note of phrase $p_{i'j'} $ is larger than a particular value or an unwanted interval and the last measure of $ p_{ij} $ and the first measure of $ p_{i'j'} $ are consecutive measures. Then we can add the following term to the objective function:
+ \begin{equation}
+ x_{ij}^tx_{i'j'}^t
+ \end{equation} 
+ for each $ t=1,\dots,M $.
+ 
+ Furthermore, it can be the case that the certain phrases $ p_{ij} $ should not be assigned to a particular track $ t $. This can be accomplished by adding the following term to the objective:
+ \begin{equation}
+ (1-x_{ij}^t).
+ \end{equation} 
+ 
+ \subsection{Further conditions}
+ Suppose that two measures should not be selected at the same time. Such a condition might be desirable when two measures played at the same time might create a dissonance and can be incorporated adding the following term to the objective function
+ \begin{equation}
+ m_{ik}m_{i'k'}
+ \end{equation}  
+for any pair of undesirable measures $m_{ik}$ and $ m_{i'k'} $. 
+
+\bibliographystyle{ieeetr}
+\bibliography{paper}
+\end{document}
