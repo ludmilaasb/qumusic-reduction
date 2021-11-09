@@ -65,16 +65,12 @@ def get_new_piece(file,solution, M):
     new_arrange = stream.Stream()
     stream_parts = [stream.Part(id = f"part{i}") for i in range(M)]
 
-    #for a,b in it.product(file.parts[1].measure(1).getElementsByClass(tempo.MetronomeMark),stream_parts):
-    #    b.append(a)
     for track, measure_list in solution.items():
         for m, orig_track in measure_list.items():
-            if m!=0:
-                #for element in file.parts[orig_track].measure(m): #.getElementsByClass(['Note', 'Rest']):
+            if m!=18:
                 stream_parts[track].append(file.parts[orig_track].getElementsByClass(stream.Measure)[m])
-    #for i in range(M):
-    new_arrange.insert(0, stream_parts[0])
-
+    for i in range(M):
+        new_arrange.insert(0, stream_parts[i])
     return new_arrange
 
 
