@@ -30,6 +30,13 @@ def get_list_entropy(a_list):
     list_entropy = sum([-p*np.log(p) for p in counts/len(a_list)])
     return list_entropy
 
+
+def get_entropy(file,track,meas_start,meas_end):
+    total_entropy = 0
+    for measure in range(meas_start,meas_end):
+        total_entropy += get_entropy_from_measure(file,track,measure)
+    return total_entropy
+
 def get_entropy_from_measure(file,track,measure):
     E_p = get_pitches(file.measure(measure).parts[track])
     E_r = get_rhythm(file.measure(measure).parts[track])
@@ -38,10 +45,15 @@ def get_entropy_from_measure(file,track,measure):
     return total_entropy
 
 if __name__ == "__main__":
-    file = converter.parse('stalker.mid')
+    file_name = 'bach-air-score.mid'
 
-    phrase = file[1].measures(1,7)
-    print(get_pitches(phrase),get_list_entropy(get_pitches(phrase)))
-    print(get_rests(phrase),get_list_entropy(get_rests(phrase)))
-    print(get_rhythm(phrase),get_list_entropy(get_rhythm(phrase)))
-    print(phrase.show('text'))
+    file = converter.parse(file_name)
+
+    #phrase = file[1].measures(1,7)
+    #print(get_pitches(phrase),get_list_entropy(get_pitches(phrase)))
+    #print(get_rests(phrase),get_list_entropy(get_rests(phrase)))
+    #print(get_rhythm(phrase),get_list_entropy(get_rhythm(phrase)))
+    #print(phrase.show('text'))
+
+    print(get_entropy_from_measure(file, 0, 2))
+    print(get_entropy(file, 0,0, 2))
