@@ -14,8 +14,9 @@ def get_objective(file,phrase_list):
     no_parts = len(file.parts)
     o = 0
     for i in range(no_parts):
+        bias = 2 if i==0 else 1
         for j in range(len(phrase_list[i])-1):
-            o += -get_entropy(file,i,phrase_list[i][j],phrase_list[i][j+1])*Binary(f"x_{i}_{j}")
+            o += -get_entropy(file,i,phrase_list[i][j],phrase_list[i][j+1])*Binary(f"x_{i}_{j}")*bias
     return o
 
 def add_phrase_measure_cons(file,phrase_list):
@@ -24,7 +25,7 @@ def add_phrase_measure_cons(file,phrase_list):
     for i in range(no_parts):
         for j in range(len(phrase_list[i]) - 1):
             for measure in range(phrase_list[i][j],phrase_list[i][j+1]):
-                o += Binary(f"x_{i}_{j}")*(1-Binary(f"m_{i}_{measure}"))
+                o += 10*Binary(f"x_{i}_{j}")*(1-Binary(f"m_{i}_{measure}"))
     return o
 
 def add_track_cons(file,M):
@@ -69,4 +70,5 @@ if __name__ == "__main__":
     sample = sampleset.first.sample
     print("offset", offset)
     print(get_selected_measures(file,sample))
-    print(get_selected_phrases(file,sample,phrase_list))
+    #print(get_selected_phrases(file,sample,phrase_list))
+    print(phrase_list)
