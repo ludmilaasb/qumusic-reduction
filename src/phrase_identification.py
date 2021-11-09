@@ -55,7 +55,7 @@ def find_maxima(a,threshold):
     return mlist
 
 def find_maxima_measures(measures,mlist):
-    meas_list = [measures[m] for m in mlist]
+    meas_list = [0]+[measures[m] for m in mlist]
     return meas_list
 
 
