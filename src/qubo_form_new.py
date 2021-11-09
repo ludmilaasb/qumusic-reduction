@@ -7,7 +7,7 @@ from music21 import *
 from pyqubo import Binary, Constraint
 
 from qubo_form import max_num_measures
-from toolbox import get_entropy
+from toolbox import get_entropy, measures_to_music, get_new_piece
 
 
 def get_objective(file,phrase_list):
@@ -33,7 +33,7 @@ def add_track_cons(file,M):
     num_measures = max_num_measures(file)
     c=0
     for j in range(num_measures) :
-       c+= Constraint((M-sum(Binary(f"m_{i}_{j}") for i in range(no_parts)))**2, f"measure_{j}")
+       c+= Constraint(10*(M-sum(Binary(f"m_{i}_{j}") for i in range(no_parts)))**2, f"measure_{j}")
     return c
 
 def get_qubo(file,phrase_list,M):
@@ -72,3 +72,8 @@ if __name__ == "__main__":
     print(get_selected_measures(file,sample))
     #print(get_selected_phrases(file,sample,phrase_list))
     print(phrase_list)
+
+    solution = measures_to_music(get_selected_measures(file,sample), M)
+    print(solution)
+    get_new_piece(file,solution, M).write("midi", "new_music.mid")
+    print(get_new_piece(file,solution, M).show('text'))
