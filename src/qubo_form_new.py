@@ -29,7 +29,7 @@ def get_objective(file,phrase_list):
     for i in range(no_parts):
         bias = 1
         if i == 0:
-            bias = 1.5
+            bias = 1.7
         elif i == 1:
             bias = 1.2
         for j in range(len(phrase_list[i])-1):

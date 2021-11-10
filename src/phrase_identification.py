@@ -40,10 +40,10 @@ def get_strength(no_parts,intervals,doc):
         sdict[i] = normed_s
     return sdict
 
-def get_measures(file):
+def get_measures(file, i):
     measures = []
     import math
-    for n in file.parts[0].flat.getElementsByClass(['Note', 'Chord']):
+    for n in file.parts[i].flat.getElementsByClass(['Note', 'Chord']):
         measures.append(math.ceil(n.offset / 4))
     return measures
 
@@ -55,7 +55,9 @@ def find_maxima(a,threshold):
     return mlist
 
 def find_maxima_measures(measures,mlist):
-    meas_list = [0]+[measures[m] for m in mlist]
+    meas_list = [0]
+    if mlist!=[]:
+        meas_list += [measures[m] for m in mlist]
     return meas_list
 
 
@@ -75,8 +77,8 @@ def get_phrase_list(file):
     max_measures = defaultdict(int)
     for i in range(no_parts):
         lbsp[i] = [0.25 * pitch + 0.75 * ioi for pitch, ioi in zip(spitch[i], sioi[i])]
-        mlist = find_maxima(lbsp[i], 0.02)
-        measures = get_measures(file)
+        mlist = find_maxima(lbsp[i], 0.01)
+        measures = get_measures(file, i)
         max_measures[i] = find_maxima_measures(measures, mlist)
 
     return max_measures
