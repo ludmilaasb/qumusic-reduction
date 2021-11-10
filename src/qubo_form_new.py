@@ -23,13 +23,12 @@ from toolbox import get_entropy, measures_to_music, get_new_piece
 #TODO Write a function to incorporate the above constraint
 
 
-def get_objective(file,phrase_list):
+def get_objective(file,phrase_list,bias):
     no_parts = len(file.parts)
     o = 0
     for i in range(no_parts):
-        bias = 1
         for j in range(len(phrase_list[i])-1):
-            o += -get_entropy(file,i,phrase_list[i][j],phrase_list[i][j+1])*Binary(f"x_{i}_{j}")*bias
+            o += -get_entropy(file,i,phrase_list[i][j],phrase_list[i][j+1])*Binary(f"x_{i}_{j}")*bias[i]
     return o
 
 def add_phrase_measure_cons(file,phrase_list):
@@ -57,8 +56,8 @@ def add_main_ins_cons(file,conf):
         c += Constraint(10 * (1 - sum(Binary(f"m_{i}_{j}") for i in conf)) ** 2, f"measure_{j}")
     return c
 
-def get_qubo(file,phrase_list,M):
-    return get_objective(file, phrase_list) + add_phrase_measure_cons(file, phrase_list) + add_track_cons(file, M) + add_main_ins_cons(file,[0,1])
+def get_qubo(file,phrase_list,M,bias):
+    return get_objective(file, phrase_list,bias) + add_phrase_measure_cons(file, phrase_list) + add_track_cons(file, M) #+ add_main_ins_cons(file,[0,1])
 
 def get_selected_measures(file,sample):
     no_parts = len(file.parts)
@@ -74,7 +73,8 @@ if __name__ == "__main__":
     file = converter.parse(file_name)
     phrase_list = get_phrase_list(file)
     M = 2
-    H = get_qubo(file,phrase_list,M)
+    bias = [1,1,1,1]
+    H = get_qubo(file,phrase_list,M,bias)
     qubo, offset = H.compile().to_qubo()
 
     s = neal.SimulatedAnnealingSampler()
