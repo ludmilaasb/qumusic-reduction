@@ -28,10 +28,6 @@ def get_objective(file,phrase_list):
     o = 0
     for i in range(no_parts):
         bias = 1
-        if i == 0:
-            bias = 1.7
-        elif i == 1:
-            bias = 1.2
         for j in range(len(phrase_list[i])-1):
             o += -get_entropy(file,i,phrase_list[i][j],phrase_list[i][j+1])*Binary(f"x_{i}_{j}")*bias
     return o
@@ -53,8 +49,16 @@ def add_track_cons(file,M):
        c+= Constraint(10*(M-sum(Binary(f"m_{i}_{j}") for i in range(no_parts)))**2, f"measure_{j}")
     return c
 
+def add_main_ins_cons(file,conf):
+    #Suppose that we dont want violin 1 and violin 2 at the same time but at least 1 violin all the time
+    num_measures = max_num_measures(file)
+    c = 0
+    for j in range(num_measures):
+        c += Constraint(10 * (1 - sum(Binary(f"m_{i}_{j}") for i in conf)) ** 2, f"measure_{j}")
+    return c
+
 def get_qubo(file,phrase_list,M):
-    return get_objective(file, phrase_list) + add_phrase_measure_cons(file, phrase_list) + add_track_cons(file, M)
+    return get_objective(file, phrase_list) + add_phrase_measure_cons(file, phrase_list) + add_track_cons(file, M) + add_main_ins_cons(file,[0,1])
 
 def get_selected_measures(file,sample):
     no_parts = len(file.parts)
