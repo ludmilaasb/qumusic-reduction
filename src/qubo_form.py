@@ -4,8 +4,6 @@ from pyqubo import Binary, Constraint
 from toolbox import *
 
 
-def max_num_measures(file):
-    return max([len(p) for p in file.parts])
 
 def qubo_form_from_dict(file):
     H = 0

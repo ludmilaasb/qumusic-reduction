@@ -48,31 +48,9 @@ def get_entropy_from_measure(file,track,measure):
     return total_entropy
 
 
-def measures_to_music(measure_list,M):
-    new_piece = defaultdict(dict)
-    for k,v in measure_list.items():
-        for measure in v:
-            for new_track in range(M):
-                if new_piece[new_track].get(measure,-1) == -1:
-                    new_piece[new_track][measure] = k
-                    break
-    for k,d in new_piece.items():
-        new_piece[k] = dict(sorted(d.items()))
-    return new_piece
 
-def get_new_piece(file,solution, M):
-
-    new_arrange = stream.Stream()
-    stream_parts = [stream.Part(id = f"part{i}") for i in range(M)]
-
-    for track, measure_list in solution.items():
-        for m, orig_track in measure_list.items():
-            if m!=18:
-                stream_parts[track].append(file.parts[orig_track].getElementsByClass(stream.Measure)[m])
-    for i in range(M):
-        new_arrange.insert(0, stream_parts[i])
-    return new_arrange
-
+def max_num_measures(file):
+    return max([len(p) for p in file.parts])
 
 
 if __name__ == "__main__":

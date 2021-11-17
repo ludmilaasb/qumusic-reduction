@@ -74,11 +74,23 @@ x_{ij} =   \begin{cases}%
  for $ i = 1, \dots ,N $ and $ j=1, \dots ,P_i  $ where $P_i$ is the number of phrases in track $i$.
 
 
-Assuming that each phrase ends exactly at the end of a measure, we can propose the following binary variables $m_{ik}$ such that 
-\begin{equation}\label{eq:phrasemeasure}
-x_{ij} = 1 \implies m_{ik}=1 \mbox{ for } k \in S_{ij}
+Assuming that each phrase ends exactly at the end of a measure, we can propose the following binary variables $m_{ik}$ such that
+\begin{equation}
+m_{ik} =   \begin{cases}%
+1,      & \text{Measure $k$ from track $i$ is selected}\\
+0, & \text{otherwise.}
+\end{cases}
 \end{equation}
- where $S_{ij}$ is the set of measures that the phrase $p_{ij}$ consists of. 
+
+We have the following relationship between the phrases and measures:
+ 
+\begin{equation}\label{eq:phrasemeasure}
+x_{ij} = 1 \iff m_{ik}=1 \mbox{ for } k \in S_{ij}
+\end{equation}
+ where $S_{ij}$ is the set of measures that the phrase $p_{ij}$ consists of. This can be incorporated by adding the terms 
+ \begin{equation}
+ x_{ij}(1-m_{ik})
+ \end{equation}
  
  The goal is to maximize:
  \begin{equation}
@@ -119,6 +131,10 @@ x_{ij} = 1 \implies m_{ik}=1 \mbox{ for } k \in S_{ij}
  \begin{equation}
  \sum_{i=1}^N m_{ik} = M \mbox{ for }k=1\dots K. 
  \end{equation} 
+ We also need to add a constraint so that the same phrase is not selected for multiple tracks:
+  \begin{equation}
+ \sum_{t=1}^M x_{ij}^t \leq 1 \mbox{ for }i=1\dots L, j=1 \dots P_i. 
+ \end{equation}
  
  Suppose that we want to add a restriction about phrases that should not be assigned to a particular track $ t $. For instance we may restrict phrase $ p_{ij} $ following phrase $ p_{i'j'} $ when the interval between the last note of phrase $ p_{ij} $ and the first note of phrase $p_{i'j'} $ is larger than a particular value or an unwanted interval and the last measure of $ p_{ij} $ and the first measure of $ p_{i'j'} $ are consecutive measures. Then we can add the following term to the objective function:
  \begin{equation}
