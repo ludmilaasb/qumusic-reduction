@@ -69,13 +69,13 @@ def get_qubo(file, phrase_list, M, bias, p_dict):
     q += num_track_cons(file,M,p_dict["num_track"])
     #q += main_ins_cons(file,[0,1], p_dict["main_ins"])
     return q
-                         
-                                                                                                            
+
+
 def get_selected_measures(file, sample):
     no_parts = len(file.parts)
     num_measures = max_num_measures(file)
     measures_list = defaultdict(int)
-    
+
     for i in range(no_parts):
         measures_list[i] = [j for j in range(num_measures) if sample[f"m_{i}_{j}"] == 1]
     return measures_list
@@ -132,17 +132,17 @@ def analyze_solution(model,sample):
     dec = model.decode_sample(sample, vartype='BINARY')
     print(dec.constraints(only_broken=True))
 
-def sample_to_music(sample):
+def sample_to_music(sample,M):
     selected_measures = get_selected_measures(file, sample)
-    solution = measures_to_tracks(selected_measures)
+    solution = measures_to_tracks(selected_measures,M)
     print(selected_measures)
     print(solution[0])
     print(solution[1])
-    get_new_piece(file, solution, M).recurse().write("midi", "new_sym1.mid")
+    get_new_piece(file, solution, M).recurse().write("midi", "new_sym12.mid")
     # get_new_piece(file, solution, M).show('text')
 
 if __name__ == "__main__":
-    file_name = 'symphony.mid'
+    file_name = 'bach-air-score.mid'
     file = converter.parse(file_name).measures(0, 40)
 
     phrase_list = get_phrase_list(file, 0.01)
@@ -156,9 +156,7 @@ if __name__ == "__main__":
     H = get_qubo(file, phrase_list, M, bias, p_dict)
     model = H.compile()
     qubo, offset = model.to_qubo()
-    mode = "sim"
+    mode = "hyb"
     sample = anneal(qubo, mode)
     analyze_solution(model, sample)
-    sample_to_music(sample)
-
-
+    sample_to_music(sample,M)
