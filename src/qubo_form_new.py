@@ -9,19 +9,19 @@ from pyqubo import Binary, Constraint
 from toolbox import *
 
 
+# TODO rests are not implemented in phrase identification
+
 # TODO Should we udpate entropy function to give some bias to high pitch notes?
 # TODO Same as above for measures with a single note?
 # TODO Could not implement changing instruemnts
-# TODO rests are not implemented in phrase identification
 # TODO Check measure numbers, measures start from 1 in music21 I suppose
 # TODO Boundaries should be checked: i.e. the first measure, last measure etc.
 # TODO Check if phrases are iterated correctly, start-end measures, is/should start taken? is end taken? Again boundary conditions.
 # TODO What if a phrase starts and ends in the same measure, we should check and avoid such situation
-# TODO Make penalties parametrized as a dictionary
-# TODO Write a function which identifies dissonant measures
 # TODO Given that a track has a certain range of pitches, write a function which would identify invalid phrases for that track
-# TODO Write a function to incorporate the above constraint
 
+# TODO Write a function which identifies dissonant measures
+# TODO Write a function to incorporate the above constraint
 
 def get_objective(file, phrase_list, bias):
     no_parts = len(file.parts)
@@ -119,14 +119,12 @@ def get_selected_phrases(file, sample, phrase_list):
 
 def anneal(qubo, mode):
     if mode == "sim":
-        s = neal.SimulatedAnnealingSampler()
-        sampleset = s.sample_qubo(qubo, num_reads=100)
-        print(sampleset.first)
-        sample = sampleset.first.sample
+        sampler = neal.SimulatedAnnealingSampler()
+        sampleset = sampler.sample_qubo(qubo, num_reads=100)
     elif mode == "hyb":
         sampler = LeapHybridSampler()
-        sample = sampler.sample_qubo(qubo)
-    return sample
+        sampleset = sampler.sample_qubo(qubo)
+    return sampleset.first.sample
 
 def analyze_solution(model,sample):
     dec = model.decode_sample(sample, vartype='BINARY')
@@ -142,13 +140,13 @@ def sample_to_music(sample,M):
     # get_new_piece(file, solution, M).show('text')
 
 if __name__ == "__main__":
-    file_name = 'bach-air-score.mid'
+    file_name = 'symphony.mid'
     file = converter.parse(file_name).measures(0, 40)
 
     phrase_list = get_phrase_list(file, 0.01)
     print("Phrase List", phrase_list)
 
-    M = 2 #Number of tracks to reduce
+    M = 3 #Number of tracks to reduce
     bias = [1] * len(file.parts)
     #bias[0] = 1.2
     #bias[1] = 1.3
@@ -156,7 +154,7 @@ if __name__ == "__main__":
     H = get_qubo(file, phrase_list, M, bias, p_dict)
     model = H.compile()
     qubo, offset = model.to_qubo()
-    mode = "hyb"
+    mode = "sim"
     sample = anneal(qubo, mode)
     analyze_solution(model, sample)
     sample_to_music(sample,M)
