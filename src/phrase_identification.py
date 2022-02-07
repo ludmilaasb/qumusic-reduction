@@ -23,9 +23,9 @@ def get_ioi(file):
 def get_rests(file):
     rests = defaultdict(list)
     for i, part in enumerate(file.parts):
-        rs = part.flat.getElementsByClass(['Rest'])
-        for rest in rs:
-            rests[i].append(rest.duration.quarterLength)
+        notes = part.flat.getElementsByClass(['Note', 'Chord'])
+        for n1, n2 in zip(notes, notes[1:]):
+            rests[i].append((n2.offset) - (n1.offset + n1.duration.quarterLength)+1)
     return rests
 
 def get_doc(no_parts, intervals):
@@ -48,7 +48,7 @@ def get_measures(file, i):
     measures = []
     import math
     for n in file.parts[i].flat.getElementsByClass(['Note', 'Chord']):
-        measures.append(math.ceil(n.offset / 4))
+        measures.append(math.ceil(n.offset / file.parts[0].measure(2).offset))
     return measures
 
 def find_maxima(a,threshold):
@@ -74,13 +74,17 @@ def get_phrase_list(file, p):
     ioi = get_ioi(file)
     rioi = get_doc(no_parts, ioi)
 
+    rests = get_rests(file)
+    rrests = get_doc(no_parts, rests)
+
     spitch = get_strength(no_parts, pitch_int, rpitch)
     sioi = get_strength(no_parts, ioi, rioi)
+    srests = get_strength(no_parts,rests,rrests)
 
     lbsp = [0] * no_parts
     max_measures = defaultdict(int)
     for i in range(no_parts):
-        lbsp[i] = [0.25 * pitch + 0.75 * ioi for pitch, ioi in zip(spitch[i], sioi[i])]
+        lbsp[i] = [0.25 * pitch + 0.5 * ioi + 0.25*rest for pitch, ioi,rest in zip(spitch[i], sioi[i],srests[i])]
         mlist = find_maxima(lbsp[i], p)
         measures = get_measures(file, i)
         max_measures[i] = find_maxima_measures(measures, mlist)

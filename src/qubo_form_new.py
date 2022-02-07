@@ -130,13 +130,13 @@ def analyze_solution(model,sample):
     dec = model.decode_sample(sample, vartype='BINARY')
     print(dec.constraints(only_broken=True))
 
-def sample_to_music(sample,M):
+def sample_to_music(sample,M,filename):
     selected_measures = get_selected_measures(file, sample)
     solution = measures_to_tracks(selected_measures,M)
     print(selected_measures)
     print(solution[0])
     print(solution[1])
-    get_new_piece(file, solution, M).recurse().write("midi", "new_sym12.mid")
+    get_new_piece(file, solution, M).recurse().write("midi", f"{filename}.mid")
     # get_new_piece(file, solution, M).show('text')
 
 if __name__ == "__main__":
@@ -157,4 +157,4 @@ if __name__ == "__main__":
     mode = "sim"
     sample = anneal(qubo, mode)
     analyze_solution(model, sample)
-    sample_to_music(sample,M)
+    sample_to_music(sample,M,'new_beethoven')
