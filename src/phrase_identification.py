@@ -239,6 +239,12 @@ def get_phrase_list(file, longest_phrase, ldict):
     return phrase_measures
 
 
+def is_all_silence(part,meas_start,meas_ends):
+    if len(part.measures(meas_start,meas_ends).flat.getElementsByClass(['Note', 'Chord']))==0:
+        print('silence!')
+    else:
+        print('not silence, it has ',len(part.measures(meas_start,meas_ends).flat.getElementsByClass(['Note', 'Chord']))==0,'notes')
+
 if __name__ == "__main__":
     file_name = "bach-air-score.mid"
     file = converter.parse(file_name).measures(0, 40)
