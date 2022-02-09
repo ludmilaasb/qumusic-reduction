@@ -37,7 +37,7 @@ def get_list_entropy(a_list):
 def get_entropy(file,track,meas_start,meas_end):
     total_entropy = 0
     for measure in range(meas_start,meas_end):
-        total_entropy += get_entropy_from_measure(file,track,measure+1)
+        total_entropy += get_entropy_from_measure(file,track,measure)
     return total_entropy
 
 def get_entropy_from_measure(file,track,measure):
