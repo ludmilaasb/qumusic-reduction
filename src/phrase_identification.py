@@ -1,93 +1,246 @@
+import math
 from collections import defaultdict
+
 from music21 import *
 
 from qubo_form import max_num_measures
 
 
+# TODO How the chords are handled?
 def get_pitch_int(file):
+    """Calculates and returns the pitch intervals
+
+    :param file: File to process
+    :type file: music21 Stream
+    :return: A dictionary containing pitch intervals for each part
+    :rtype: defaultdict
+    """
     pitch_int = defaultdict(list)
     for i, part in enumerate(file.parts):
-        for p1,p2 in zip(part.pitches, part.pitches[1:]):
-            intvl = interval.Interval(p1,p2)
-            pitch_int[i].append(abs(intvl.chromatic.semitones)+1)
+        for p1, p2 in zip(part.pitches, part.pitches[1:]):
+            intvl = interval.Interval(p1, p2)
+            pitch_int[i].append(abs(intvl.chromatic.semitones) + 1)
     return pitch_int
 
+
 def get_ioi(file):
+    """Calculates and returns the inter offset intervals
+
+    :param file: File to process
+    :type file: music21 Stream
+    :return: A dictionary containing inter offset intervals for each part
+    :rtype: defaultdict
+    """
     ioi = defaultdict(list)
     for i, part in enumerate(file.parts):
-        notes = part.flat.getElementsByClass(['Note', 'Chord'])
+        notes = part.flat.getElementsByClass(["Note", "Chord"])
         for n1, n2 in zip(notes, notes[1:]):
             ioi[i].append(n2.offset - n1.offset)
     return ioi
 
+
 def get_rests(file):
+    """Calculates and returns the rest intervals
+
+    :param file: File to process
+    :type file: music21 Stream
+    :return: A dictionary containing rest intervals for each part
+    :rtype: defaultdict
+    """
     rests = defaultdict(list)
     for i, part in enumerate(file.parts):
-        notes = part.flat.getElementsByClass(['Note', 'Chord'])
+        notes = part.flat.getElementsByClass(["Note", "Chord"])
         for n1, n2 in zip(notes, notes[1:]):
-            rests[i].append((n2.offset) - (n1.offset + n1.duration.quarterLength)+1)
+            rests[i].append(
+                max(0, n2.offset - n1.offset + n1.duration.quarterLength) + 1
+            )
     return rests
 
-def get_doc(no_parts, intervals):
+
+# TODO check the list is initalized with 0
+def get_doc(intervals):
+    """Calculates and returns the degree of change given intervals
+
+    :param intervals: Dictionary containing intervals for each part
+    :type intervals: defaultdict
+    :return: A dictionary containing degree of change information for each part
+    :rtype: defaultdict
+    """
+    no_parts = len(intervals)
     rdict = defaultdict(lambda: [0])
     for i in range(no_parts):
-        rdict[i] += [abs(int2-int1)/(int1+int2) for int1,int2 in zip(intervals[i],intervals[i][1:])]
+        rdict[i] += [
+            abs(int2 - int1) / (int1 + int2)
+            for int1, int2 in zip(intervals[i], intervals[i][1:])
+        ]
     return rdict
 
-def get_strength(no_parts,intervals,doc):
+
+def get_strength(intervals, doc):
+    """Calculates boundary strength given the intervals and degree of change
+
+    :param intervals: Dictionary containing intervals for each part
+    :type intervals: defaultdict
+    :param doc: Degree of change information for each part
+    :type doc: defaultdict
+    :return: Dictionary containing boundary strengths for each part
+    :rtype: defaultdict
+    """
+    no_parts = len(intervals)
     sdict = defaultdict(list)
     for i in range(no_parts):
-        slist = [intervals[i][j+1]*(doc[i][j]+doc[i][j+1]) for j in range(len(intervals[i])-1)]
+        slist = [
+            intervals[i][j + 1] * (doc[i][j] + doc[i][j + 1])
+            for j in range(len(intervals[i]) - 1)
+        ]
         s = sum(slist)
-        if s!=0:
-            slist = [r/s for r in slist]
+        if s != 0:
+            slist = [r / s for r in slist]
         sdict[i] = slist
     return sdict
 
-def get_measures(file, i):
-    measures = []
-    import math
-    for n in file.parts[i].flat.getElementsByClass(['Note', 'Chord']):
-        measures.append(math.ceil(n.offset / file.parts[0].measure(2).offset))
+
+def get_measures(file):
+    """Gives information about which pitch belongs to which measure
+
+    :param file: File to process
+    :type file: music21 Stream
+    :return: A dictionary of lists where each list is the list of measures corresponding to the pitches in each part
+    :rtype: defaultdict
+    """
+    no_parts = len(file.parts)
+    measures = defaultdict(list)
+    for i in range(no_parts):
+        for n in file.parts[i].flat.getElementsByClass(["Note", "Chord"]):
+            measures[i].append(math.ceil(n.offset / file.parts[0].measure(2).offset))
     return measures
 
-def find_maxima(a,threshold):
-    mlist = []
-    for i in range(1,len(a)-1):
-        if a[i]>a[i+1] and a[i-1]<a[i] and a[i]>threshold :
-            mlist.append(i)
-    return mlist
 
-def find_maxima_measures(measures,mlist):
-    meas_list = [0]
-    if mlist!=[]:
-        meas_list += [measures[m] for m in mlist]
+def find_peaks_t(bs, threshold):
+    """Find the peaks in a list that are above a threshold value
+
+    :param bs: The list to analyze consisting of boundary strength for each pitch
+    :type bs: list
+    :param threshold: The threshold value
+    :type threshold: float
+    :return: The list of indices that correspond to the peaks
+    :rtype: list
+    """
+
+    return [
+        i
+        for i in range(1, len(bs) - 1)
+        if bs[i] > bs[i + 1] and bs[i - 1] < bs[i] and bs[i] > threshold
+    ]
+
+
+def find_peaks(file, bs, measures, longest_phrase):
+    """Finds the peaks in in array, based on the condition that the longest phrase should not exceed a limit. If no solution is found, then the limit in increased. To guide the process, a threshold value is used, which is decreased at each iteration.
+
+    :param file: File to process
+    :type file: music21 Stream
+    :param bs: The list to analyze consisting of boundary strength for each pitch
+    :type bs: list
+    :param measures: The list of measures corresponding to each pitch
+    :type measures: list
+    :param longest_phrase: The upper bound on the longest phrase length
+    :type longest_phrase: int
+    :return: A list of measures indicating phrase beginning and endings
+    :rtype: list
+    """
+    min_bs = min(x for x in bs if x != 0)
+    threshold = max(bs)
+    flag = True
+    while flag:
+        flag = False
+        plist = find_peaks_t(bs, threshold)
+        meas_list = find_peak_measures(file, measures, plist)
+        for m1, m2 in zip(meas_list, meas_list[1:]):
+            if m2 - m1 > longest_phrase:
+                flag = True
+                threshold -= min_bs
+                if threshold < 0:
+                    threshold = max(bs)
+                    longest_phrase += 1
+                break
     return meas_list
 
 
-def get_phrase_list(file, p):
-    no_parts = len(file.parts)
+def find_peak_measures(file, measures, plist):
+    """Given a list of pitches that correspond to peaks, it returns the corresponding measures. If same measure is selected more than once, then it is taken only once
 
+    :param file: File to process
+    :type file: music21 Stream
+    :param measures: The list of measures corresponding to each pitch
+    :type measures:list
+    :param plist: The list of indices that correspond to the peaks
+    :type plist: list
+    :return: The list of measures corresponding to the peaks
+    :rtype: list
+    """
+    meas_list = [0]
+    if plist != []:
+        meas_list += [measures[m] for m in plist]
+    meas_list.append(max_num_measures(file))
+    return sorted(list(set(meas_list)))
+
+
+def calculate_lbsp(file, ldict):
+    """Given a file and a dictionary containing the weights, returns the lbsp
+
+    :param file: File to process
+    :type file: music21 Stream
+    :param ldict: Dictionary containing weights for pitch, ioi and rests
+    :type ldict: dict
+    :return: lbsp for each part
+    :rtype: defaultdict
+    """
     pitch_int = get_pitch_int(file)
-    rpitch = get_doc(no_parts, pitch_int)
+    rpitch = get_doc(pitch_int)
+    spitch = get_strength(pitch_int, rpitch)
 
     ioi = get_ioi(file)
-    rioi = get_doc(no_parts, ioi)
+    rioi = get_doc(ioi)
+    sioi = get_strength(ioi, rioi)
 
     rests = get_rests(file)
-    rrests = get_doc(no_parts, rests)
+    rrests = get_doc(rests)
+    srests = get_strength(rests, rrests)
 
-    spitch = get_strength(no_parts, pitch_int, rpitch)
-    sioi = get_strength(no_parts, ioi, rioi)
-    srests = get_strength(no_parts,rests,rrests)
+    no_parts = len(file.parts)
+    lbsp = defaultdict(list)
 
-    lbsp = [0] * no_parts
-    max_measures = defaultdict(int)
     for i in range(no_parts):
-        lbsp[i] = [0.25 * pitch + 0.5 * ioi + 0.25*rest for pitch, ioi,rest in zip(spitch[i], sioi[i],srests[i])]
-        mlist = find_maxima(lbsp[i], p)
-        measures = get_measures(file, i)
-        max_measures[i] = find_maxima_measures(measures, mlist)
-        max_measures[i].append(max_num_measures(file))
+        lbsp[i] = [
+            ldict["p"] * pitch + ldict["i"] * ioi + ldict["r"] * rest
+            for pitch, ioi, rest in zip(spitch[i], sioi[i], srests[i])
+        ]
 
-    return max_measures
+    return lbsp
+
+
+def get_phrase_list(file, longest_phrase, ldict):
+    """Given the upper bound for the longest phrase and the weights, returns the measures corresponding to the beginning and ending of the phrases
+
+    :param file: File to process
+    :type file: music21 Stream
+    :param longest_phrase: Upper bound on the longest phrase
+    :type longest_phrase: int
+    :param ldict: Dictionary containing weights for pitch, ioi and rests
+    :type ldict: dict
+    :return: Measures indicating beginning and the end of the phrases for each part
+    :rtype: defaultdict
+    """
+    phrase_measures = defaultdict(list)
+    measures = get_measures(file)
+    lbsp = calculate_lbsp(file, ldict)
+    for i in range(len(file.parts)):
+        phrase_measures[i] = find_peaks(file, lbsp[i], measures[i], longest_phrase)
+    return phrase_measures
+
+
+if __name__ == "__main__":
+    file_name = "bach-air-score.mid"
+    file = converter.parse(file_name).measures(0, 40)
+    m = get_phrase_list(file, 3, {"p": 0.25, "i": 0.5, "r": 0.25})
+    print(m)
