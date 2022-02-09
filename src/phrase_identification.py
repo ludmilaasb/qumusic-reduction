@@ -178,10 +178,10 @@ def find_peak_measures(file, measures, plist):
     :return: The list of measures corresponding to the peaks
     :rtype: list
     """
-    meas_list = [0]
+    meas_list = [1]
     if plist != []:
         meas_list += [measures[m] for m in plist]
-    meas_list.append(max_num_measures(file))
+    meas_list.append(max_num_measures(file)+1)
     return sorted(list(set(meas_list)))
 
 
@@ -242,5 +242,5 @@ def get_phrase_list(file, longest_phrase, ldict):
 if __name__ == "__main__":
     file_name = "bach-air-score.mid"
     file = converter.parse(file_name).measures(0, 40)
-    m = get_phrase_list(file, 3, {"p": 0.25, "i": 0.5, "r": 0.25})
+    m = get_phrase_list(file, 4, {"p": 0.25, "i": 0.5, "r": 0.25})
     print(m)
