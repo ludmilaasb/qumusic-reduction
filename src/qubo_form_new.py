@@ -127,8 +127,8 @@ def get_qubo(file, phrase_list, M, bias, conf_list, p_dict):
     :type conf_list:
     :param p_dict:
     :type p_dict:
-    :return: QUBO formulation
-    :rtype: dict
+    :return: QUBO formulation, the offset and the model
+    :rtype: dict, float, cpp_pyqubo.Model
     """
     H = get_objective(file, phrase_list, bias)
     H += phrase_measure_cons(file, phrase_list, p_dict["phrase_measure"])
@@ -137,4 +137,4 @@ def get_qubo(file, phrase_list, M, bias, conf_list, p_dict):
 
     model = H.compile()
     qubo, offset = model.to_qubo()
-    return qubo, offset
+    return qubo, offset, model
