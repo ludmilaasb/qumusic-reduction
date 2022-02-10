@@ -36,8 +36,12 @@ def get_list_entropy(a_list):
 
 def get_entropy(file,track,meas_start,meas_end):
     total_entropy = 0
-    for measure in range(meas_start,meas_end):
-        total_entropy += get_entropy_from_measure(file,track,measure)
+    E_p = get_pitches(file.stripTies().parts[track].measures(meas_start,meas_end).flat)
+    E_r = get_rhythm(file.stripTies().parts[track].measures(meas_start,meas_end).flat)
+    E_s = get_rests(file.stripTies().parts[track].measures(meas_start,meas_end).flat)
+    total_entropy = get_list_entropy(E_p) + get_list_entropy(E_r)+ get_list_entropy(E_s)
+    # for measure in range(meas_start,meas_end):
+    #     total_entropy += get_entropy_from_measure(file,track,measure)
     return total_entropy
 
 def get_entropy_from_measure(file,track,measure):
