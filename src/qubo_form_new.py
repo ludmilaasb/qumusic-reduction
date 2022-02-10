@@ -1,10 +1,4 @@
 from collections import defaultdict
-
-import neal
-from dwave.system import LeapHybridSampler
-
-from phrase_identification import get_phrase_list
-from music21 import *
 from pyqubo import Binary, Constraint
 from toolbox import *
 
@@ -21,8 +15,9 @@ from toolbox import *
 # TODO Write a function which identifies dissonant measures
 # TODO Write a function to incorporate the above constraint
 
+
 def get_objective(file, phrase_list, bias):
-    ''' Implements the objective part of the QUBO
+    """Implements the objective part of the QUBO
 
     :param file: File to process
     :type file: music21 Stream
@@ -32,16 +27,20 @@ def get_objective(file, phrase_list, bias):
     :type bias: list
     :return: pyqubo object corresponding to the objective function
     :rtype: cpp_pyqubo.Add
-    '''
+    """
     o = 0
     for i in range(len(file.parts)):
         for j in range(len(phrase_list[i]) - 1):
-            o += -get_entropy(file, i, phrase_list[i][j], phrase_list[i][j + 1]) * Binary(f"x_{i}_{j}") * bias[i]
+            o += (
+                -get_entropy(file, i, phrase_list[i][j], phrase_list[i][j + 1])
+                * Binary(f"x_{i}_{j}")
+                * bias[i]
+            )
     return o
 
 
 def phrase_measure_cons(file, phrase_list, p):
-    ''' Implements the constraint a phrase is selected iff corresponding measures are selected
+    """Implements the constraint a phrase is selected iff corresponding measures are selected
 
     :param file: File to process
     :type file: music21 Stream
@@ -51,21 +50,25 @@ def phrase_measure_cons(file, phrase_list, p):
     :type p: float
     :return: pyqubo object corresponding to the objective function
     :rtype: cpp_pyqubo.Add
-    '''
+    """
 
     c = 0
     for i in range(len(file.parts)):
         for j in range(len(phrase_list[i]) - 1):
             for measure in range(phrase_list[i][j], phrase_list[i][j + 1]):
-                c += Constraint(p * Binary(f"x_{i}_{j}") * (1 - Binary(f"m_{i}_{measure}")),
-                                f"phrase_measure_{i}_{j}_{measure}")
-                c += Constraint(p * (1 - Binary(f"x_{i}_{j}")) * Binary(f"m_{i}_{measure}"),
-                                f"measure_phrase_{i}_{j}_{measure}")
+                c += Constraint(
+                    p * Binary(f"x_{i}_{j}") * (1 - Binary(f"m_{i}_{measure}")),
+                    f"phrase_measure_{i}_{j}_{measure}",
+                )
+                c += Constraint(
+                    p * (1 - Binary(f"x_{i}_{j}")) * Binary(f"m_{i}_{measure}"),
+                    f"measure_phrase_{i}_{j}_{measure}",
+                )
     return c
 
 
 def num_track_cons(file, M, p):
-    ''' Implements the number of tracks constraint, which ensures that there are M tracks after the reduction
+    """Implements the number of tracks constraint, which ensures that there are M tracks after the reduction
 
     :param file: File to process
     :type file: music21 Stream
@@ -75,15 +78,18 @@ def num_track_cons(file, M, p):
     :type p: float
     :return: pyqubo object corresponding to the objective function
     :rtype: cpp_pyqubo.Add
-    '''
+    """
     c = 0
     for j in range(max_num_measures(file)):
-        c += Constraint(p * (M - sum(Binary(f"m_{i}_{j}") for i in range(len(file.parts)))) ** 2, f"num_track_{j}")
+        c += Constraint(
+            p * (M - sum(Binary(f"m_{i}_{j}") for i in range(len(file.parts)))) ** 2,
+            f"num_track_{j}",
+        )
     return c
 
 
 def conf_ins_cons(file, conf_list, p):
-    ''' This constraint make sures that conflicting instruments are not selected at the same time. For instance, two violins may not be desirable to selected at the same time for instance.
+    """This constraint make sures that conflicting instruments are not selected at the same time. For instance, two violins may not be desirable to selected at the same time for instance.
 
     :param file: File to process
     :type file: music21 Stream
@@ -93,16 +99,21 @@ def conf_ins_cons(file, conf_list, p):
     :type p: float
     :return: pyqubo object corresponding to the objective function
     :rtype: cpp_pyqubo.Add
-    '''
+    """
     c = 0
     for nc, conf in enumerate(conf_list):
         for j in range(max_num_measures(file)):
-            c += Constraint(p * (1 - sum(Binary(f"m_{i}_{j}") for i in conf) - Binary(f"s_{nc}_{j}")) ** 2, f"main_ins_{j}")
+            c += Constraint(
+                p
+                * (1 - sum(Binary(f"m_{i}_{j}") for i in conf) - Binary(f"s_{nc}_{j}"))
+                ** 2,
+                f"main_ins_{j}",
+            )
     return c
 
 
 def get_qubo(file, phrase_list, M, bias, conf_list, p_dict):
-    '''
+    """
 
     :param file: File to process
     :type file: music21 Stream
@@ -116,13 +127,13 @@ def get_qubo(file, phrase_list, M, bias, conf_list, p_dict):
     :type conf_list:
     :param p_dict:
     :type p_dict:
-    :return: QUBO formulation as a pyqubo object
-    :rtype: cpp_pyqubo.Add
-    '''
+    :return: QUBO formulation
+    :rtype: dict
+    """
     H = get_objective(file, phrase_list, bias)
     H += phrase_measure_cons(file, phrase_list, p_dict["phrase_measure"])
-    H += num_track_cons(file,M,p_dict["num_track"])
-    H += conf_ins_cons(file,conf_list, p_dict["main_ins"])
+    H += num_track_cons(file, M, p_dict["num_track"])
+    H += conf_ins_cons(file, conf_list, p_dict["main_ins"])
 
     model = H.compile()
     qubo, offset = model.to_qubo()
