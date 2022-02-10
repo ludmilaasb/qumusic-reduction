@@ -154,16 +154,20 @@ def find_peaks(file, bs, measures, longest_phrase):
     while flag:
         flag = False
         plist = find_peaks_t(bs, threshold)
-        meas_list = find_peak_measures(file, measures, plist)
-        for m1, m2 in zip(meas_list, meas_list[1:]):
-            if m2 - m1 > longest_phrase:
+        if plist == []:
+            threshold -= min_bs
+            flag = True
+            continue
+        phrase_start_end = find_peak_measures(file, measures, plist)
+        for pair in phrase_start_end:
+            if pair[1] - pair[0] + 1 > longest_phrase:
                 flag = True
                 threshold -= min_bs
                 if threshold < 0:
                     threshold = max(bs)
                     longest_phrase += 1
                 break
-    return meas_list
+    return phrase_start_end
 
 
 def find_peak_measures(file, measures, plist):
@@ -178,11 +182,16 @@ def find_peak_measures(file, measures, plist):
     :return: The list of measures corresponding to the peaks
     :rtype: list
     """
-    meas_list = [1]
-    if plist != []:
-        meas_list += [measures[m] for m in plist]
-    meas_list.append(max_num_measures(file)+1)
-    return sorted(list(set(meas_list)))
+    meas_list = []
+    
+    meas_list += [measures[m] for m in plist]
+    
+    measure_list = sorted(list(set(meas_list)))
+    phrase_start_end = [[1,measure_list[0]]]
+    for i in range(len(measure_list)-1):
+        phrase_start_end.append([measure_list[i]+1,measure_list[i+1]])
+    phrase_start_end.append([measure_list[-1]+1,max_num_measures(file)])
+    return phrase_start_end
 
 
 def calculate_lbsp(file, ldict):

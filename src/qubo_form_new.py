@@ -30,9 +30,9 @@ def get_objective(file, phrase_list, bias):
     """
     o = 0
     for i in range(len(file.parts)):
-        for j in range(len(phrase_list[i]) - 1):
+        for j,pair in enumerate(phrase_list[i]):
             o += (
-                -get_entropy(file, i, phrase_list[i][j], phrase_list[i][j + 1])
+                -get_entropy(file, i, pair[0], pair[1])
                 * Binary(f"x_{i}_{j}")
                 * bias[i]
             )
@@ -54,8 +54,8 @@ def phrase_measure_cons(file, phrase_list, p):
 
     c = 0
     for i in range(len(file.parts)):
-        for j in range(len(phrase_list[i]) - 1):
-            for measure in range(phrase_list[i][j], phrase_list[i][j + 1]):
+        for j,pair in enumerate(phrase_list[i]):
+            for measure in range(pair[0], pair[1]+1):
                 c += Constraint(
                     p * Binary(f"x_{i}_{j}") * (1 - Binary(f"m_{i}_{measure}")),
                     f"phrase_measure_{i}_{j}_{measure}",

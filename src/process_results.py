@@ -53,7 +53,7 @@ def tracks_to_stream(file, tracks):
     print("solution", tracks)
     for t, measure_list in tracks.items():
         for m, orig_track in measure_list.items():
-            stream_parts[t].append(file.parts[orig_track].getElementsByClass(stream.Measure)[m])
+            stream_parts[t].append(file.parts[orig_track].measure(m+1))
     for i in range(M):
         new_arrange.insert(0, stream_parts[i])
     return new_arrange
@@ -76,5 +76,5 @@ def sample_to_midi(file,sample,M,filename):
     print(selected_measures)
     for i in range(M):
         print(tracks[i])
-    tracks_to_stream(file, tracks, M).recurse().write("midi", f"{filename}.mid")
+    tracks_to_stream(file, tracks).recurse().write("midi", f"{filename}.mid")
     # get_new_piece(file, solution, M).show('text')
