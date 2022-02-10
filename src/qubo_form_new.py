@@ -133,7 +133,7 @@ def get_qubo(file, phrase_list, M, bias, conf_list, p_dict):
     H = get_objective(file, phrase_list, bias)
     H += phrase_measure_cons(file, phrase_list, p_dict["phrase_measure"])
     H += num_track_cons(file, M, p_dict["num_track"])
-    H += conf_ins_cons(file, conf_list, p_dict["main_ins"])
+    H += conf_ins_cons(file, conf_list, p_dict["conf_ins"])
 
     model = H.compile()
     qubo, offset = model.to_qubo()
