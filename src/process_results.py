@@ -37,7 +37,7 @@ def measures_to_tracks(measure_list, M):
         tracks[t] = dict(sorted(d.items()))  #Sort by measures
     return tracks
 
-def create_midi(file, tracks):
+def tracks_to_stream(file, tracks):
     '''
     
     :param file: File to process
@@ -59,18 +59,22 @@ def create_midi(file, tracks):
     return new_arrange
 
 
+def sample_to_midi(file,sample,M,filename):
+    ''' Given a sample, creates the midi file and stores it
 
-
-
-
-
-
-
-def sample_to_music(file,sample,M,filename):
+    :param file: File to process
+    :type file: music21 Stream
+    :param sample: sample obtained from D-Wave
+    :type sample: dict
+    :param M: Number of tracks
+    :type M: int
+    :param filename: Name of the new file
+    :type filename: str
+    '''
     selected_measures = get_selected_measures(file, sample)
-    solution = measures_to_tracks(selected_measures,M)
+    tracks = measures_to_tracks(selected_measures,M)
     print(selected_measures)
-    print(solution[0])
-    print(solution[1])
-    get_new_piece(file, solution, M).recurse().write("midi", f"{filename}.mid")
+    for i in range(M):
+        print(tracks[i])
+    tracks_to_stream(file, tracks, M).recurse().write("midi", f"{filename}.mid")
     # get_new_piece(file, solution, M).show('text')
