@@ -10,22 +10,12 @@ def get_pitches(phrase):
         pitches_list.append(nt.pitches[-1].ps)
     return pitches_list
 
-def get_rests(phrase):
-    rest_list = []
-    for nt in phrase.flat.getElementsByClass(['Rest']):
-        rest_list.append(nt.duration.quarterLength/4)
-    return rest_list
-
-def get_rhythm(phrase):
-    rhythm_list = []
-    count = 0
-    for nt in phrase.flat.getElementsByClass(['Note','Chord','Rest']):
-        if nt.isRest:
-            count+= nt.duration.quarterLength/4
-        if nt.isRest == False and count >= 0:
-            rhythm_list.append(count)
-            count = 0
-    return rhythm_list
+def get_ioi_list(phrase): 
+    ioi_list = []
+    notes = phrase.flat.getElementsByClass(["Note", "Chord"])
+    for n1, n2 in zip(notes, notes[1:]):
+        ioi_list.append(n2.offset - n1.offset)
+    return ioi_list
 
 def get_list_entropy(a_list):
     unique,counts = np.unique(a_list,return_counts=True)
@@ -33,15 +23,12 @@ def get_list_entropy(a_list):
     list_entropy = sum([-p*np.log(p) for p in counts/len(a_list)])
     return list_entropy
 
-
 def get_entropy(file,track,meas_start,meas_end):
     total_entropy = 0
-    E_p = get_pitches(file.stripTies().parts[track].measures(meas_start,meas_end).flat)
-    E_r = get_rhythm(file.stripTies().parts[track].measures(meas_start,meas_end).flat)
-    E_s = get_rests(file.stripTies().parts[track].measures(meas_start,meas_end).flat)
-    total_entropy = get_list_entropy(E_p) + get_list_entropy(E_r)+ get_list_entropy(E_s)
-    # for measure in range(meas_start,meas_end):
-    #     total_entropy += get_entropy_from_measure(file,track,measure)
+    file = file.stripTies()
+    E_p = get_pitches(file.parts[track].measures(meas_start,meas_end).flat)
+    E_ioi = get_ioi_list(file.parts[track].measures(meas_start,meas_end).flat)
+    total_entropy = get_list_entropy(E_p) + get_list_entropy(E_ioi)
     return total_entropy
 
 def get_entropy_from_measure(file,track,measure):
