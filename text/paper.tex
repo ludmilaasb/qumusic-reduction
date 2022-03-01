@@ -35,10 +35,9 @@
 %		2) Quantum Information Processing 
 %		3) Journal of Discrete Mathematics
 
-\section{Introduction}
 
 
-% Main idea: Operational Interval Scheduling Problem with no Idle time
+% Main idea: Operational Fixed Interval Scheduling Problem with no Idle time
 
 
 % Introduction: previous work and problem definition (briefly). 
@@ -48,12 +47,15 @@
 % Experement: Music Reduction
 
 \section{Introduction}
+Previous applications of QA to unconstrained optimization \cite{ikeda2019application}
+
+
 We demonstrate the use of QA to solve ???? and we evaluate its efficiency and accuracy for this problem
 from empirical results. Our approach uses the commercial quantum annealer available from D-Wave Systems to
 implement several hard constraints. The D-Wave 2000Q is a commercially available quantum annealing device
 
 % TODO: change notation for machine and jobs
-\section{Formulations}
+\section{Interval Scheduling Problem}
 \subsection{Problem Definition}
 The Fixed Interval Scheduling problem consists of planning a set of $N$ jobs $\{J_1, \cdots,J_N \}$ on a set of $M$ resources or physical machines $\{R_1, ...,R_M \}$. Each $J_i$ job has a  profit $w_j$ and consists of a set of operations $\{V_{i1}, \cdots , V_{iM} \}$ that have to be executed sequentially. The jobs have fixed start and end times and are assigned to at most one machine, which are continuously available. The objective is to select a set of jobs assing them to the machines so as to maximize the profit with minimum idle time. 
 \subsection{General form}
