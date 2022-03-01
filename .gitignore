@@ -255,3 +255,5 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+
+__pycache__/
