@@ -256,4 +256,9 @@ TSWLatexianTemp*
 # Makeindex log files
 *.lpz
 
-__pycache__/
+*.ipynb_checkpoints
+*.tags
+
+*__pycache__
+
+text/paper.pdf
