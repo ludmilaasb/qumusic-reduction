@@ -52,7 +52,7 @@ Quantum algorithms caused novelty and excitement with the possibility of speed u
 
 Algorithms that can run on such NISQ devices have been developed. Quantum Annealing (QA) and the Quantum Approximate Optimization Algorithm (QAOA) are among the most promising ones \textcolor{red}{[add citations]}. A better understanding of the performances of these approaches on industrial problems is of great interest, both for quantum computing adoption and for the application domains concerned. 
 
-Quantum Annealing is used for solving optimization tasks expressed in term of a Ising Hamniltonian, designed in such a way that its ground state encapsulates the optimal solution to the considered problem.
+Quantum Annealing is used for solving optimization tasks expressed in term of a Ising Hamniltonian \textcolor{red}{[Should we cite lucas2018? how much should we talk about Ising Model in QUBO section? Should we add something about D-Wave as well?]}, designed in such a way that its ground state encapsulates the optimal solution to the considered problem.
 
 \textcolor{red}{Paragraphy to describe previous applications of QA to unconstrained optimization and scheduling problems} \cite{ikeda2019application}
 
@@ -67,41 +67,44 @@ implement several hard constraints. The D-Wave 2000Q is a commercially available
 \subsection{Problem Definition}
 The Fixed Interval Scheduling problem consists of planning a set of $N$ jobs $\{J_1, \cdots,J_N \}$ on a set of $M$ resources or physical machines $\{R_1, ...,R_M \}$. Each $J_i$ job has a  profit $w_j$ and consists of a set of operations $\{V_{i1}, \cdots , V_{iM} \}$ that have to be executed sequentially. The jobs have fixed start and end times and are assigned to at most one machine, which are continuously available. The objective is to select a set of jobs assing them to the machines so as to maximize the profit with minimum idle time. 
 \subsection{General form}
-\subsection{No Idle Time}
-
-\section{Quantum Annealing}
-
-
-
-Suppose that there are $ N $ tracks in the song and the goal is to reduce the number of tracks to $ M $.
-\subsection{First approach}
 
 This is the approach used to model fixed job scheduling \cite{arkin1987scheduling, barcia2005k}. 
 
-Let $L $ be the number of phrases. Let us denote the set of phrases $ p_1,p_2,\dots,p_L $ by $ P $. Let $ G=(P,E) $ be the graph with vertices $ P $ such that edge $(i,j) \in E$ if phrases $ i $ and $ j $ are compatible i.e. they do not intersect.
+Let $L $ be the number of jobs. Let us denote the set of jobs $ p_1,p_2,\dots,p_L $ by $ P $. Let $ G=(P,E) $ be the graph with vertices $ P $ such that edge $(i,j) \in E$ if jobs $ i $ and $ j $ are compatible i.e. they do not intersect.
 
 Let $ x_{ij} $ be the assignment variable such that
 \begin{equation}
 x_{ij} =   \begin{cases}%
-1,      & \text{if phrase $i$ is assigned to track $j$}\\
+1,      & \text{if job $i$ is assigned to machine $j$}\\
 0, & \text{otherwise.}
 \end{cases}
 \end{equation}
- for $ i = 1, \dots ,L $ and $ j=1, \dots ,M  $. $ e(p_i) $ denotes the entropy for phrase $ p_i $. The goal is to maximize 
+for $ i = 1, \dots ,L $ and $ j=1, \dots ,M  $. $ e(p_i) $ denotes the weight for job $ p_i $. The goal is to maximize 
 \begin{equation}
 \sum_{i=1}^L \sum_{j=1}^M e(p_{i})x_{ij}	
- \end{equation}
- such that
- \begin{align}
- &\sum_{j=1}^M x_{ij} \leq 1 \mbox{ for }i=1\dots L \\
- &\sum_{i \in I} x_{ij} \leq 1 \mbox{ for } I \subseteq P
- \end{align}
- where $ I $ in any maximal independent set of $ G $.
+\end{equation}
+such that
+\begin{align}
+&\sum_{j=1}^M x_{ij} \leq 1 \mbox{ for }i=1\dots L \\
+&\sum_{i \in I} x_{ij} \leq 1 \mbox{ for } I \subseteq P
+\end{align}
+where $ I $ in any maximal independent set of $ G $.
 
 
-The first constraint ensures that each phrase is assigned to at most one track. The second constraints ensures that incompatible phrases are not selected. In our case, $ G $ is an interval graph and the problem is solvable in time $ O(L^2 \log L) $ by a classical algorithm. The number of variables required by this approach is $ O(LM) $. Note that $ L $ depends on the number of tracks and the number of measures in the music piece.
+The first constraint ensures that each job is assigned to at most one machine. The second constraints ensures that incompatible jobs are not selected. In our case, $ G $ is an interval graph and the problem is solvable in time $ O(L^2 \log L) $ by a classical algorithm. The number of variables required by this approach is $ O(LM) $. Note that $ L $ depends on the number of machines and the number of process in the job set.
 
-The drawback of this formulation is that it does not take into consideration if after the reduction some tracks are empty in a given time period. It can even be the case that all tracks are empty at a time point. In terms of jobs and machines, this corresponds to machine being idle for some time. 
+The drawback of this formulation is that it does not take into consideration if after the optimization some machines are idle in a given time period. It can even be the case that all machines are idle at a time point.  
+
+
+\subsection{No Idle Time}
+
+\section{Quantum Annealing}
+\subsection{QUBO Formulation of OFISP}
+
+Suppose that there are $ N $ tracks in the song and the goal is to reduce the number of tracks to $ M $.
+
+\subsection{First approach}
+
 
 \subsection{New approach}
 In order to overcome this, we will define the following formulation. Let $ p_{ij} $ denote the $ j $'th phrase of track $ i $. Let us define the binary variable $x_{ij}$ such that:
