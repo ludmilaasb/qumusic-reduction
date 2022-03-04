@@ -96,24 +96,19 @@ The drawback of this formulation is that it does not take into consideration if 
 
 
 \subsection{No Idle Time}
+% measure = time unity 
+% for each job: define start and ending time
+% lengh of the song  = max (e_t)
 
-\section{Quantum Annealing}
-\subsection{QUBO Formulation of OFISP}
-
-Suppose that there are $ N $ tracks in the song and the goal is to reduce the number of tracks to $ M $.
-
-\subsection{First approach}
-
-
-\subsection{New approach}
 In order to overcome this, we will define the following formulation. Let $ p_{ij} $ denote the $ j $'th phrase of track $ i $. Let us define the binary variable $x_{ij}$ such that:
 \begin{equation}
+%change to x_j, (job selected or not)
 x_{ij} =   \begin{cases}%
 1,      & \text{$j$'th phrase of track $i$ is selected}\\
 0, & \text{otherwise.}
 \end{cases}
 \end{equation}
- for $ i = 1, \dots ,N $ and $ j=1, \dots ,P_i  $ where $P_i$ is the number of phrases in track $i$.
+for $ i = 1, \dots ,N $ and $ j=1, \dots ,P_i  $ where $P_i$ is the number of phrases in track $i$.
 
 
 Assuming that each phrase ends exactly at the end of a measure, we can propose the following binary variables $m_{ik}$ such that
@@ -125,28 +120,34 @@ m_{ik} =   \begin{cases}%
 \end{equation}
 
 We have the following relationship between the phrases and measures:
- 
+
 \begin{equation}\label{eq:phrasemeasure}
 x_{ij} = 1 \iff m_{ik}=1 \mbox{ for } k \in S_{ij}
 \end{equation}
- where $S_{ij}$ is the set of measures that the phrase $p_{ij}$ consists of. This can be incorporated by adding the terms 
- \begin{equation}
- x_{ij}(1-m_{ik})
- \end{equation}
- 
- The goal is to maximize:
- \begin{equation}
- \sum_{i=1}^N\sum_{j=1}^{P_i} e(p_{ij})x_{ij}
- \end{equation}
- such that
- \begin{equation}\label{eq:mtrack}
+where $S_{ij}$ is the set of measures that the phrase $p_{ij}$ consists of. This can be incorporated by adding the terms 
+\begin{equation}
+x_{ij}(1-m_{ik})
+\end{equation}
+
+The goal is to maximize:
+\begin{equation}
+\sum_{i=1}^N\sum_{j=1}^{P_i} e(p_{ij})x_{ij}
+\end{equation}
+such that
+\begin{equation}\label{eq:mtrack}
 \sum_{i=1}^N m_{ik} = M \mbox{ for }k=1,\dots, K 
 \end{equation}
- where $K$ is the number of measures in the music piece. 
- 
- The constraint defined by Eq.\eqref{eq:mtrack} ensures that $M$ measures are selected among $ N $ at any given time. Note that this is a soft constraint while the constraint defined in Eq. \ref{eq:phrasemeasure} is a hard constraint. The number of variables required by this formulation is upper bounded by $ O(L+NK) $.
- 
- Note that the obtained solution does not give us information about which phrase should be assigned to which track. But once we have the assignment to the binary variables $ x_{ij} $, this can be determined using the following classical algorithm:
+where $K$ is the number of measures in the music piece. 
+
+The constraint defined by Eq.\eqref{eq:mtrack} ensures that $M$ measures are selected among $ N $ at any given time. Note that this is a soft constraint while the constraint defined in Eq. \ref{eq:phrasemeasure} is a hard constraint. The number of variables required by this formulation is upper bounded by $ O(L+NK) $.
+
+Note that the obtained solution does not give us information about which phrase should be assigned to which track. But once we have the assignment to the binary variables $ x_{ij} $, this can be determined using the following classical algorithm:
+
+\section{Quantum Annealing}
+
+
+Suppose that there are $ N $ tracks in the song and the goal is to reduce the number of tracks to $ M $.
+
  
  \subsection{More advanced formulation}
  
