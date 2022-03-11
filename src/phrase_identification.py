@@ -15,7 +15,7 @@ def get_pitch_int(file):
     :return: A dictionary containing pitch intervals for each part
     :rtype: defaultdict
     """
-    pitch_int = defaultdict(list)
+    pitch_int = {i:[] for i in range(len(file.parts))}
     for i, part in enumerate(file.parts):
         for p1, p2 in zip(part.pitches, part.pitches[1:]):
             intvl = interval.Interval(p1, p2)
@@ -31,7 +31,7 @@ def get_ioi(file):
     :return: A dictionary containing inter offset intervals for each part
     :rtype: defaultdict
     """
-    ioi = defaultdict(list)
+    ioi = {i:[] for i in range(len(file.parts))}
     for i, part in enumerate(file.parts):
         notes = part.flat.getElementsByClass(["Note", "Chord"])
         for n1, n2 in zip(notes, notes[1:]):
@@ -47,7 +47,7 @@ def get_rests(file):
     :return: A dictionary containing rest intervals for each part
     :rtype: defaultdict
     """
-    rests = defaultdict(list)
+    rests = {i:[] for i in range(len(file.parts))}
     for i, part in enumerate(file.parts):
         notes = part.flat.getElementsByClass(["Note", "Chord"])
         for n1, n2 in zip(notes, notes[1:]):
@@ -148,26 +148,29 @@ def find_peaks(file, bs, measures, longest_phrase):
     :return: A list of measures indicating phrase beginning and endings
     :rtype: list
     """
-    min_bs = min(x for x in bs if x != 0)
-    threshold = max(bs)
-    flag = True
-    while flag:
-        flag = False
-        plist = find_peaks_t(bs, threshold)
-        if plist == []:
-            threshold -= min_bs
-            flag = True
-            continue
-        phrase_start_end = find_peak_measures(file, measures, plist)
-        for pair in phrase_start_end:
-            if pair[1] - pair[0] + 1 > longest_phrase:
-                flag = True
+    if len(bs) != 0:
+        min_bs = min(x for x in bs if x != 0)
+        threshold = max(bs)
+        flag = True
+        while flag:
+            flag = False
+            plist = find_peaks_t(bs, threshold)
+            if plist == []:
                 threshold -= min_bs
-                if threshold < 0:
-                    threshold = max(bs)
-                    longest_phrase += 1
-                break
-    return phrase_start_end
+                flag = True
+                continue
+            phrase_start_end = find_peak_measures(file, measures, plist)
+            for pair in phrase_start_end:
+                if pair[1] - pair[0] + 1 > longest_phrase:
+                    flag = True
+                    threshold -= min_bs
+                    if threshold < 0:
+                        threshold = max(bs)
+                        longest_phrase += 1
+                    break
+        return phrase_start_end
+    else:
+        return []
 
 
 def find_peak_measures(file, measures, plist):
@@ -249,10 +252,16 @@ def get_phrase_list(file, longest_phrase, ldict):
 
 
 def is_all_silence(part,meas_start,meas_ends):
-    if len(part.measures(meas_start,meas_ends).flat.getElementsByClass(['Note', 'Chord']))==0:
-        print('silence!')
-    else:
-        print('not silence, it has ',len(part.measures(meas_start,meas_ends).flat.getElementsByClass(['Note', 'Chord']))==0,'notes')
+    return len(part.measures(meas_start,meas_ends).flat.getElementsByClass(['Note', 'Chord']))==0
+    #     print('silence!')
+    # else:
+    #     print('not silence, it has ',len(part.measures(meas_start,meas_ends).flat.getElementsByClass(['Note', 'Chord']))==0,'notes')
+
+def modify_phrase_list(phrase_measures, file):
+    for track in phrase_measures:
+        phrase_measures[track] = [p in phrase_measures[track] for p in phrase_measures[track] if not is_all_silence(file.parts[track],p[0],p[1])]
+    return phrase_measures
+        
 
 if __name__ == "__main__":
     file_name = "bach-air-score.mid"
