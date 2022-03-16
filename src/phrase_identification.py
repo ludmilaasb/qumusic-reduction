@@ -17,8 +17,10 @@ def get_pitch_int(file):
     """
     pitch_int = {i:[] for i in range(len(file.parts))}
     for i, part in enumerate(file.parts):
-        for p1, p2 in zip(part.pitches, part.pitches[1:]):
+        pitches = [m.pitches[-1] for m in part.flat.getElementsByClass(["Note", "Chord"])]
+        for p1, p2 in zip(pitches, pitches[1:]):
             intvl = interval.Interval(p1, p2)
+            print('get_pitch_int: i p1 p2',i,p1,p2)
             pitch_int[i].append(abs(intvl.chromatic.semitones) + 1)
     return pitch_int
 
@@ -112,7 +114,7 @@ def get_measures(file):
     measures = defaultdict(list)
     for i in range(no_parts):
         for n in file.parts[i].flat.getElementsByClass(["Note", "Chord"]):
-            measures[i].append(math.ceil(n.offset / file.parts[0].measure(2).offset))
+            measures[i].append(n.measureNumber)
     return measures
 
 
@@ -208,8 +210,10 @@ def calculate_lbsp(file, ldict):
     :rtype: defaultdict
     """
     pitch_int = get_pitch_int(file)
+    print('calculate_lbsp: pitch_int',pitch_int)
     rpitch = get_doc(pitch_int)
     spitch = get_strength(pitch_int, rpitch)
+
 
     ioi = get_ioi(file)
     rioi = get_doc(ioi)
@@ -240,12 +244,14 @@ def get_phrase_list(file, longest_phrase, ldict):
     :type longest_phrase: int
     :param ldict: Dictionary containing weights for pitch, ioi and rests
     :type ldict: dict
-    :return: Measures indicating beginning and the end of the phrases for each part
+    :return: Measures indicating beginning and the end of the phrases for e ach part
     :rtype: defaultdict
     """
     phrase_measures = defaultdict(list)
     measures = get_measures(file)
+    print(' checking get_phrase_list',measures)
     lbsp = calculate_lbsp(file, ldict)
+    print('checking get_phrase_list 1',lbsp[0])
     for i in range(len(file.parts)):
         phrase_measures[i] = find_peaks(file, lbsp[i], measures[i], longest_phrase)
     return phrase_measures
@@ -264,7 +270,7 @@ def modify_phrase_list(phrase_measures, file):
         
 
 if __name__ == "__main__":
-    file_name = "bach-air-score.mid"
-    file = converter.parse(file_name).measures(0, 40)
+    file_name = "Symphony_No._7_2nd_Movement.mid"
+    file = converter.parse(file_name).measures(0, 30).stripTies()
     m = get_phrase_list(file, 4, {"p": 0.25, "i": 0.5, "r": 0.25})
     print(m)

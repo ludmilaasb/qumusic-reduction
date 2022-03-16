@@ -35,7 +35,7 @@ def run_experiment(mode,file,M,bias,p_dict,conf_list, longest_phrase, new_filena
 
 if __name__ == "__main__":
     file_name = 'bach-air-score.mid'
-    file = converter.parse(file_name).measures(0, 40)
+    file = converter.parse(file_name).measures(0, 40).stripTies()
     M = 1 #Number of tracks to reduce
     bias = [1] * len(file.parts)
     bias[1] = 20
