@@ -9,7 +9,7 @@
 \usepackage{microtype}
 \usepackage{hyperref}
 \usepackage{physics}
-
+\usepackage{lipsum}
 %%%%%%%%%%%%%%%%%%% TEMPLATE DEFNITION: DO NOT MODIFY! %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \onecolumngrid % Single column.
@@ -58,10 +58,9 @@ $^2$Joint Doctoral School, Silesian University of Technology, Akademicka 2a, 44-
   
 With the emergence of quantum computers, a new field of algorithmic for optimization tasks is flourishing. In the context of current devices, subjected to the Noisy Intermediate-Scale Quantum (NISQ) paradigm, one of the promising models for quantum computation is the Adiabatic Quantum Computing (AQC), and a heuristic algorithm known as Quantum Annealing (QA) running in the framework of AQC. QA is used for solving optimization tasks expressed in term of a Ising Hamiltonian designed in such a way that its ground state encapsulates the optimal solution to the considered problem. 
 
-Among the optimization problems, the class of job scheduling has both significance for computational science and operations research. We investigate the Operational Fixed Interval Scheduling Problem (OFISP) with multiobjective approach. The OFISP is characterized as the problem of scheduling a number of jobs, each with a fixed starting and end time, a priority index, and a job class. The objective is to find an assignment of jobs to machines with maximal total priority. One possible application to the OFISP is the Music Arrangement Reduction. 
+Among the optimization problems, the class of job scheduling has both significance for computational science and operations research. We investigate the Operational Fixed Interval Scheduling Problem (OFISP) with multiobjective approach. The OFISP is characterized as the problem of scheduling a number of jobs, each with a fixed starting and end time, a priority index, and a job class. The objective is to find an assignment of jobs to machines with maximal total priority. One possible application to the OFISP is the Music Score/Arrangement Reduction, a process that arranges music for a target instrument by reducing original music preserving the characteristics of the original piece as much as possible. The music is separated in different tracks for each instrument and consequentially in phrases, which are in in the OFISP notation the jobs, which contains different priorities measure by their information entropy. The goal is to selected the phrases in such way that it preservers the similarity with the original piece but minimizing the silence between phrases. The number of new tracks for the reduced composition are the equivalent to machines to perform the jobs. 
 
-The problem can be encoded as Quadratic Unconstrained Binary Optmization (QUBO) form
-
+The problem can be encoded as Quadratic Unconstrained Binary Optmization (QUBO) form, which is native for QA problems, since it is mapped into Ising Model.
 
 We demonstrate the use of QA to solve a multiobjective OFISP and we evaluate its efficiency and accuracy for this problem from empirical results. Our approach uses the commercial quantum annealer available from D-Wave Systems to implement several hard constraints. The D-Wave 2000Q is a commercially available quantum annealing device... We use QA to reduce a complex music sheet to simpler version, a problem known as Music Arrange Reduction. 
 \end{abstract}
