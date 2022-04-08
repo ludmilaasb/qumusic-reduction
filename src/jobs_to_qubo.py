@@ -1,4 +1,3 @@
-from scipy.fftpack import ifftn
 from experiment import *
 from pyqubo.integer.log_encoded_integer import LogEncInteger 
 
@@ -11,6 +10,17 @@ class Job:
       self.id = id
       self.weight = weight
       Job.count += 1
+    def __repr__(self): 
+        return  f"Job id no: {self.id}, start: {self.start}, end: {self.end}, weight:{self.weight} \n" 
+
+def random_jobs(num_jobs,max_time,max_weight):
+    rdm_jobs_list = []
+    for i in range(num_jobs):
+        start = np.random.randint(0,max_time)
+        end = np.random.randint(start+1,max_time+1)
+        weight = np.random.randint(1,max_weight+1)
+        rdm_jobs_list.append(Job(start,end,i,weight))
+    return rdm_jobs_list
 
 
 def get_objective(job_list):
@@ -33,7 +43,7 @@ def get_objective(job_list):
 def runing_jobs(job_list, t):
     run_jobs = []
     for job in job_list:
-        if t >= job.start and t <= job.end:
+        if t > job.start and t <= job.end:
             run_jobs.append(job.id)
     return run_jobs
     
@@ -52,7 +62,7 @@ def num_machine_cons(M, job_list, max_time, p):
     :rtype: cpp_pyqubo.Add
     """
     c = 0
-    for j in range(max_time+1):
+    for j in range(1,max_time+1):
         run_jobs = runing_jobs(job_list,j)
         if len(run_jobs) < 1:
             continue
@@ -76,7 +86,7 @@ def min_idle_time_cons(M, job_list, max_time, p):
     """
     
     c = 0
-    for j in range(max_time+1):
+    for j in range(1,max_time+1):
         run_jobs = runing_jobs(job_list,j)
         if len(run_jobs) < 1:
             continue
@@ -114,23 +124,26 @@ def get_qubo(job_list, M, max_time, p_dict):
     return qubo, offset, model
 
 if __name__ == "__main__":
-    job1 = Job(1,3,1,2)
-    print(job1)
-    job2 = Job(3,4,2,1)
-    job_list = [job1,job2]
+    # job1 = Job(1,3,1,2)
+    # print(job1)
+    # job2 = Job(3,4,2,1)
+    # job_list = [job1,job2]
     M = 1
-    p = 1
+    # p = 1
     max_time = 4
+
+    job_list = random_jobs(5,max_time,4)
+
+    print(job_list)
     p_dict = {"machine": 2, "idle": 1}
     mode = "sim"
-    # print(get_objective(job_list)) ok
-    # print(num_machine_cons(M, job_list, max_time, p)) ok
-    # print(min_idle_time_cons(M, job_list, max_time, p)) ok
+    # # print(get_objective(job_list)) ok
+    # # print(num_machine_cons(M, job_list, max_time, p)) ok
+    # # print(min_idle_time_cons(M, job_list, max_time, p)) ok
 
     qubo,_,model = get_qubo(job_list,M,max_time,p_dict)
     sampleset = anneal(qubo, mode)
     sample = sampleset.first.sample
-    # analyze_solution(model, sample)
-
     print("this is the sample", sample,"\n")
+    
     analyze_solution(model, sample)
