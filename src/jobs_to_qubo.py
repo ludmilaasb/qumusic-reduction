@@ -1,6 +1,7 @@
 from experiment import *
 from pyqubo.integer.log_encoded_integer import LogEncInteger 
 
+np.random.seed(100)
 
 class Job:
     count = 0
