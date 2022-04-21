@@ -5,12 +5,17 @@ np.random.seed(100)
 
 class Job:
     count = 0
-    def __init__(self, start, end, id, weight):
-      self.start = start
-      self.end = end
-      self.id = id
-      self.weight = weight
-      Job.count += 1
+    def __init__(self, start, end, weight, id = -1):
+        self.start = start
+        self.end = end
+        self.weight = weight
+        if id == -1:
+            self.id = Job.count
+        else:
+            self.id = id
+        Job.count += 1
+    def set_track(self,track):
+        self.track = track
     def __repr__(self): 
         return  f"Job id no: {self.id}, start: {self.start}, end: {self.end}, weight:{self.weight} \n" 
 
@@ -20,7 +25,7 @@ def random_jobs(num_jobs,max_time,max_weight):
         start = np.random.randint(0,max_time)
         end = np.random.randint(start+1,max_time+1)
         weight = np.random.randint(1,max_weight+1)
-        rdm_jobs_list.append(Job(start,end,i,weight))
+        rdm_jobs_list.append(Job(start, end, weight, id = i))
     return rdm_jobs_list
 
 

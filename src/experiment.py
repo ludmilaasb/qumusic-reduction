@@ -33,6 +33,31 @@ def run_experiment(mode,file,M,bias,p_dict,conf_list, longest_phrase, new_filena
     analyze_solution(model, sample)
     sample_to_midi(file, sample, M, new_filename) 
 
+def sample_to_jobs(sample,job_list):
+    new_list = []
+    for job in job_list:
+        if sample[f"x_{job.id}"] == 1:
+            new_list.append(job)
+    return new_list
+
+def sort_jobs(jobs_list):
+    return sorted(jobs_list, key=lambda x: x.end, reverse=False) 
+
+def greddy_machines(M,job_list):
+    machines_dict = {i:[] for i in range(M)}
+    for job in job_list:
+        for m in range(M):
+            try:
+                if job.start >= machines_dict[m][-1].end:
+                    machines_dict[m].append(job)
+                    break
+            except IndexError:
+                print("list is empty")
+                machines_dict[m].append(job)
+                break
+    return machines_dict
+                
+
 if __name__ == "__main__":
     file_name = 'bach-air-score.mid'
     file = converter.parse(file_name).measures(0, 40).stripTies()
